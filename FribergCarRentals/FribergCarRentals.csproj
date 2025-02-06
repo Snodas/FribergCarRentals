@@ -7,6 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\User\**" />
+    <Content Remove="Views\User\**" />
+    <EmbeddedResource Remove="Views\User\**" />
+    <None Remove="Views\User\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\UserController.cs" />
+    <Compile Remove="Data\IUserRepository.cs" />
+    <Compile Remove="Data\UserRepository.cs" />
     <Compile Remove="Migrations\xApplicationDbContextModelSnapshot.cs" />
   </ItemGroup>
 

@@ -1,6 +1,7 @@
 ﻿using FribergCarRentals.Data;
 using FribergCarRentals.Models;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
+using Microsoft.AspNetCore.Identity;
 
 namespace FribergCarRentals.Services
 {
@@ -13,7 +14,7 @@ namespace FribergCarRentals.Services
             this.bookingRepository = bookingRepository;
         }
 
-        public void ValidateAndCreate(User user, Car car, DateTime startDate, DateTime endDate)
+        public void ValidateAndCreate(IdentityUser user, Car car, DateTime startDate, DateTime endDate)
         {
 
 
@@ -71,7 +72,7 @@ namespace FribergCarRentals.Services
             return bookingRepository.GetAllCars();
         }
 
-        public IEnumerable<User> GetUsers()
+        public IEnumerable<IdentityUser> GetUsers()
         {
             return bookingRepository.GetAllUsers();
         }

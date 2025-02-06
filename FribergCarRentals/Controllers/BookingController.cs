@@ -1,12 +1,15 @@
 ﻿using FribergCarRentals.Data;
 using FribergCarRentals.Models;
 using FribergCarRentals.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace FribergCarRentals.Controllers
 {
+    [Authorize] 
     public class BookingController : Controller
     {
         private readonly IBookingService bookingService; 
@@ -35,7 +38,7 @@ namespace FribergCarRentals.Controllers
                 .Select(u => new SelectListItem
                 {
                     Value = u.Id.ToString(),
-                    Text = u.FirstName + " " + u.LastName
+                    Text = u.UserName 
                 }).ToList();
 
             ViewBag.UserId = users;
@@ -57,7 +60,7 @@ namespace FribergCarRentals.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(Booking booking)
         {
-            var user = new User { Id = booking.UserId };
+            var user = new IdentityUser { Id = booking.UserId };
             var car = new Car { Id = booking.CarId };
 
             bookingService.ValidateAndCreate(user, car, booking.Start, booking.End);

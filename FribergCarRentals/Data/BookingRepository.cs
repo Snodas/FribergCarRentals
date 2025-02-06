@@ -1,5 +1,6 @@
 ﻿using FribergCarRentals.Models;
 using FribergCarRentals.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace FribergCarRentals.Data
 {
@@ -39,7 +40,7 @@ namespace FribergCarRentals.Data
         {
             return applicationDbContext.Cars.ToList();
         }
-        public IEnumerable<User> GetAllUsers()
+        public IEnumerable<IdentityUser> GetAllUsers()
         {
             return applicationDbContext.Users.ToList();
         }
@@ -52,7 +53,7 @@ namespace FribergCarRentals.Data
                    select new BookingView { 
                         Id = bs.Id, 
                        Car = cs.Brand + " " + cs.Model, 
-                       User = us.FirstName + " " + us.LastName, 
+                       User = us.UserName,  
                        Start = bs.Start, 
                        End = bs.End };   
         }
@@ -62,7 +63,7 @@ namespace FribergCarRentals.Data
             return applicationDbContext.Bookings.FirstOrDefault(b => b.Id == id);
         }
 
-        public bool DoesUserExist(int userId)
+        public bool DoesUserExist(string userId)
         {
             return applicationDbContext.Users.Any(u => u.Id == userId);
         }

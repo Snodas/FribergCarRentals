@@ -1,10 +1,12 @@
 ﻿using FribergCarRentals.Data;
 using FribergCarRentals.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FribergCarRentals.Controllers
 {
+    [Authorize(Roles="Admin")]
     public class CarController : Controller
     {
         private readonly ICarRepository carRepository;
