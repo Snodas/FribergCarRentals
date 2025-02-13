@@ -1,0 +1,36 @@
+﻿@model FribergCarRentals.Models.Booking
+
+@{
+    ViewData["Title"] = "Create Booking";
+}
+
+<h1>Create Booking</h1>
+
+<div>
+    <h4>Car: @ViewBag.Car</h4>
+    <h4>User: @ViewBag.User</h4>
+    <hr />
+    <form asp-action="CreateForUser">
+        <div class="form-group">
+            <label asp-for="Start" class="control-label"></label>
+            <input asp-for="Start" class="form-control" />
+            <span asp-validation-for="Start" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="End" class="control-label"></label>
+            <input asp-for="End" class="form-control" />
+            <span asp-validation-for="End" class="text-danger"></span>
+        </div>
+        <input type="hidden" asp-for="CarId" />
+        <input type="hidden" asp-for="UserId" />
+        <div class="form-group">
+            <input type="submit" value="Book" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

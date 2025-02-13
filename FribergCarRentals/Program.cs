@@ -10,6 +10,7 @@ using FribergCarRentals.Models;
 //    {
 //        public async static void Main(string[] args)
 //        {
+
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("IdentityDbContextConnection") ?? throw new InvalidOperationException("Connection string 'IdentityDbContextConnection' not found.");;
 
@@ -20,9 +21,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 builder.Services.AddTransient<ICarRepository, CarRepository>();
-//builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IBookingRepository, BookingRepository>();
 builder.Services.AddTransient<IBookingService, BookingService>();
 
@@ -42,9 +44,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+app.UseStaticFiles();
 
 app.MapControllerRoute(
     name: "default",
@@ -52,8 +57,6 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.MapRazorPages();
-
-
 
 using (var scope = app.Services.CreateScope())
 {

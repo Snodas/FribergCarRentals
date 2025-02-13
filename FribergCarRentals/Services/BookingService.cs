@@ -1,111 +1,97 @@
 ﻿using FribergCarRentals.Data;
 using FribergCarRentals.Models;
-using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.AspNetCore.Identity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace FribergCarRentals.Services
 {
     public class BookingService : IBookingService
     {
-        private readonly IBookingRepository bookingRepository;
-       
+        private readonly IBookingRepository _bookingRepository;
+
         public BookingService(IBookingRepository bookingRepository)
         {
-            this.bookingRepository = bookingRepository;
+            _bookingRepository = bookingRepository;
         }
 
-        public void ValidateAndCreate(IdentityUser user, Car car, DateTime startDate, DateTime endDate)
+        public void ValidateAndCreate(string userId, int carId, DateTime startDate, DateTime endDate)
         {
-
-
-            if (user == null || car == null)
-                throw new ArgumentNullException("User or Car cannot be null.");
-
-            if (startDate >= endDate)
-                throw new ArgumentException("Start date must be earlier than end date.");
-
-            try
+            // Validate user existence
+            if (!_bookingRepository.DoesUserExist(userId))
             {
-                if (!bookingRepository.DoesUserExist(user.Id))
-                    throw new Exception($"User with ID {user.Id} does not exist in the database.");
-
-                if (!bookingRepository.DoesCarExist(car.Id))
-                    throw new Exception($"Car with ID {car.Id} does not exist in the database.");
-
-                if (!bookingRepository.IsCarAvailable(car.Id, startDate, endDate))
-                    throw new Exception($"Car with ID {car.Id} is not available for the selected dates.");
-
-                var booking = new Booking
-                {
-                    UserId = user.Id,
-                    CarId = car.Id,
-                    Start = startDate,
-                    End = endDate
-                };
-
-                bookingRepository.Add(booking);
-                Console.WriteLine("Booking created successfully.");
+                throw new Exception("User does not exist.");
             }
-            catch (Exception ex)
+
+            // Validate car existence
+            if (!_bookingRepository.DoesCarExist(carId))
             {
-                throw new Exception($"Booking validation or creation failed: {ex.Message}");
+                throw new Exception("Car does not exist.");
             }
+
+            // Validate start and end dates
+            if (startDate < DateTime.Now)
+            {
+                throw new Exception("Start date cannot be in the past.");
+            }
+
+            if (endDate <= startDate)
+            {
+                throw new Exception("End date must be after the start date.");
+            }
+
+            // Check car availability
+            if (!_bookingRepository.IsCarAvailable(carId, startDate, endDate))
+            {
+                throw new Exception("Car is not available for the selected dates.");
+            }
+
+            // Create and save the booking
+            var booking = new Booking
+            {
+                UserId = userId,
+                CarId = carId,
+                Start = startDate,
+                End = endDate
+            };
+
+            _bookingRepository.Add(booking);
         }
 
         public void DeleteBooking(Booking booking)
         {
-            bookingRepository.Delete(booking);
-        }
-
-        public Booking GetByID(int id)
-        {
-            return bookingRepository.GetByID(id);
-        }
-
-        public IEnumerable<BookingView> GetBookingView()
-        {
-            return bookingRepository.GetBookingView();
+            _bookingRepository.Delete(booking);
         }
 
         public IEnumerable<Car> GetCars()
         {
-            return bookingRepository.GetAllCars();
+            return _bookingRepository.GetAllCars();
         }
 
         public IEnumerable<IdentityUser> GetUsers()
         {
-            return bookingRepository.GetAllUsers();
+            return _bookingRepository.GetAllUsers();
         }
 
-        //public bool IsCarAvailable(Car car, DateTime startDate, DateTime endDate)
-        //{
-        //    return !applicationDbContext.Bookings
-        //        .Where(b => b.Car.Id == car.Id)
-        //        .Any(b => b.Start < endDate && b.End > startDate);
-        //}
+        public Booking GetByID(int id)
+        {
+            return _bookingRepository.GetByID(id);
+        }
 
-        //public bool DoesUserExist(User user)
-        //{
-        //    return applicationDbContext.Users.Any(u => u.Id == user.Id);
-        //}
+        public BookingViewModel GetBookingView(int id)
+        {
+            return _bookingRepository.GetBookingView(id);
+        }
 
-        //public bool IsStartDateValid(DateTime startDate)
-        //{
-        //    return startDate >= DateTime.Now;
-        //}
-        //public bool IsStartDateAvailable(DateTime startDate)
-        //{
-        //    return !applicationDbContext.Bookings.Any(b => b.Start == startDate);
-        //}
+        public IEnumerable<BookingViewModel> GetBookingsView()
+        {
+            return _bookingRepository.GetBookingsView();
+        }
 
-        //public bool IsEndDateValid(DateTime startDate, DateTime endDate)
-        //{
-        //    return endDate > startDate;
-        //}
-        //public bool IsEndDateAvailable(DateTime endDate)
-        //{
-        //    return !applicationDbContext.Bookings.Any(b => b.End == endDate);
-        //}
-
+        public void Update(Booking booking)
+        {
+            _bookingRepository.Update(booking);
+        }
     }
 }

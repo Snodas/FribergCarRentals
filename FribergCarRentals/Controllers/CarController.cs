@@ -1,19 +1,25 @@
 ﻿using FribergCarRentals.Data;
 using FribergCarRentals.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace FribergCarRentals.Controllers
 {
-    [Authorize(Roles="Admin")]
+    [Authorize(Roles = "Admin")]
     public class CarController : Controller
     {
         private readonly ICarRepository carRepository;
+        private readonly IWebHostEnvironment webHostEnvironment;
 
-        public CarController(ICarRepository carRepository)
+        public CarController(ICarRepository carRepository, IWebHostEnvironment webHostEnvironment)
         {
             this.carRepository = carRepository;
+            this.webHostEnvironment = webHostEnvironment;
         }
 
         // GET: CarController
@@ -25,55 +31,117 @@ namespace FribergCarRentals.Controllers
         // GET: CarController/Details/5
         public ActionResult Details(int id)
         {
-            return View(carRepository.GetByID(id));
+            var car = carRepository.GetByID(id);
+            if (car == null)
+            {
+                return NotFound();
+            }
+
+            return View(car);
         }
 
         // GET: CarController/Create
         public ActionResult Create()
         {
-            return View();
+            return View(new CarViewModel());
         }
 
         // POST: CarController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Car car)
+        public async Task<ActionResult> Create(CarViewModel carViewModel)
         {
             try
             {
-                if(ModelState.IsValid)
+                if (ModelState.IsValid)
                 {
+                    var car = new Car
+                    {
+                        Brand = carViewModel.Brand,
+                        Model = carViewModel.Model,
+                        ModelYear = carViewModel.ModelYear
+                    };
+
+                    if (carViewModel.Picture != null)
+                    {
+                        using (var ms = new MemoryStream())
+                        {
+                            await carViewModel.Picture.CopyToAsync(ms);
+                            car.Image = ms.ToArray();
+                            car.ImageFormat = carViewModel.Picture.ContentType;
+                        }
+                    }
+
                     carRepository.Add(car);
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
+                return View(carViewModel);
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                Console.WriteLine(ex.Message);
+                return View(carViewModel);
             }
         }
 
         // GET: CarController/Edit/5
         public ActionResult Edit(int id)
         {
-            return View(carRepository.GetByID(id));
+            var car = carRepository.GetByID(id);
+            if (car == null)
+            {
+                return NotFound();
+            }
+
+            var carViewModel = new CarViewModel
+            {
+                Id = car.Id,
+                Brand = car.Brand,
+                Model = car.Model,
+                ModelYear = car.ModelYear
+            };
+
+            return View(carViewModel);
         }
 
         // POST: CarController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(Car car)
+        public async Task<ActionResult> Edit(CarViewModel carViewModel)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
+                    var car = carRepository.GetByID(carViewModel.Id);
+                    if (car == null)
+                    {
+                        return NotFound();
+                    }
+
+                    car.Brand = carViewModel.Brand;
+                    car.Model = carViewModel.Model;
+                    car.ModelYear = carViewModel.ModelYear;
+
+                    if (carViewModel.Picture != null)
+                    {
+                        using (var ms = new MemoryStream())
+                        {
+                            await carViewModel.Picture.CopyToAsync(ms);
+                            car.Image = ms.ToArray();
+                            car.ImageFormat = carViewModel.Picture.ContentType;
+                        }
+                    }
+
                     carRepository.Update(car);
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
+                return View(carViewModel);
             }
-            catch
+            catch (Exception ex)
             {
+                // Log exception
+                Console.WriteLine(ex.Message);
                 return View();
             }
         }
@@ -81,17 +149,35 @@ namespace FribergCarRentals.Controllers
         // GET: CarController/Delete/5
         public ActionResult Delete(int id)
         {
-            return View(carRepository.GetByID(id));
+            var car = carRepository.GetByID(id);
+            if (car == null)
+            {
+                return NotFound();
+            }
+
+            var carViewModel = new CarViewModel
+            {
+                Id = car.Id,
+                Brand = car.Brand,
+                Model = car.Model,
+                ModelYear = car.ModelYear
+            };
+
+            return View(carViewModel);
         }
 
         // POST: CarController/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(Car car)
+        public ActionResult DeleteConfirmed(CarViewModel carViewModel)
         {
             try
             {
-                carRepository.Delete(car);
+                var car = carRepository.GetByID(carViewModel.Id);
+                if (car != null)
+                {
+                    carRepository.Delete(car);
+                }
                 return RedirectToAction(nameof(Index));
             }
             catch

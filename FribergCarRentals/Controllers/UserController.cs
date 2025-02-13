@@ -1,101 +1,120 @@
-﻿using FribergCarRentals.Data;
-using FribergCarRentals.Models;
-using Microsoft.AspNetCore.Http;
+﻿using FribergCarRentals.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace FribergCarRentals.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class UserController : Controller
     {
-        private readonly IUserRepository userRepository;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public UserController(IUserRepository userRepository)
+        public UserController(UserManager<IdentityUser> userManager)
         {
-            this.userRepository = userRepository;
+            _userManager = userManager;
         }
 
-        // GET: UserController
-        public ActionResult Index()
+        public IActionResult Index()
         {
-            return View(userRepository.GetAll());
+            var users = _userManager.Users;
+            return View(users);
         }
 
-        // GET: UserController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View(userRepository.GetByID(id));
-        }
-
-        // GET: UserController/Create
-        public ActionResult Create()
+        public IActionResult Create()
         {
             return View();
         }
 
-        // POST: UserController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(User user)
+        public async Task<IActionResult> Create(CreateUserViewModel model)
         {
-            try
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
+                var user = new IdentityUser { UserName = model.UserName, Email = model.Email };
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
                 {
-                    userRepository.Add(user);
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: UserController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View(userRepository.GetByID(id));    
-        }
-
-        // POST: UserController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(User user)
-        {
-            try
-            {
-                if (ModelState.IsValid)
+                foreach (var error in result.Errors)
                 {
-                    userRepository.Update(user);
+                    ModelState.AddModelError(string.Empty, error.Description);
                 }
-                return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                return View();
-            }
+            return View(model);
         }
 
-        // GET: UserController/Delete/5
-        public ActionResult Delete(int id)
+        public async Task<IActionResult> Edit(string id)
         {
-            return View(userRepository.GetByID(id));
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View(user);
         }
 
-        // POST: UserController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(User user)
+        public async Task<IActionResult> Edit(IdentityUser user)
         {
-            try
+            if (ModelState.IsValid)
             {
-                userRepository.Delete(user);
+                var existingUser = await _userManager.FindByIdAsync(user.Id);
+                if (existingUser == null)
+                {
+                    return NotFound();
+                }
+
+                existingUser.UserName = user.UserName;
+                existingUser.Email = user.Email;
+
+                var result = await _userManager.UpdateAsync(existingUser);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+            return View(user);
+        }
+
+        public async Task<IActionResult> Delete(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View(user);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+            {
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            foreach (var error in result.Errors)
             {
-                return View();
+                ModelState.AddModelError(string.Empty, error.Description);
             }
+            return View(user);
         }
     }
 }

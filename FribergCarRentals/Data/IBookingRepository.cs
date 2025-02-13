@@ -7,7 +7,8 @@ namespace FribergCarRentals.Data
     {
         Booking GetByID(int id);
         IEnumerable<Booking> GetAll();
-        IEnumerable<BookingView> GetBookingView();
+        IEnumerable<BookingViewModel> GetBookingsView();
+        BookingViewModel GetBookingView(int id);
         IEnumerable<Car> GetAllCars();
         IEnumerable<IdentityUser> GetAllUsers();
 

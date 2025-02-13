@@ -45,22 +45,41 @@ namespace FribergCarRentals.Data
             return applicationDbContext.Users.ToList();
         }
 
-        public IEnumerable<BookingView> GetBookingView()
+        public IEnumerable<BookingViewModel> GetBookingsView()
         {
             return from bs in applicationDbContext.Bookings
-                   join cs in applicationDbContext.Cars on bs.CarId equals cs.Id  
+                   join cs in applicationDbContext.Cars on bs.CarId equals cs.Id
                    join us in applicationDbContext.Users on bs.UserId equals us.Id
-                   select new BookingView { 
-                        Id = bs.Id, 
-                       Car = cs.Brand + " " + cs.Model, 
-                       User = us.UserName,  
-                       Start = bs.Start, 
-                       End = bs.End };   
+                   select new BookingViewModel
+                   {
+                       Id = bs.Id,
+                       CarId = bs.CarId,
+                       Car = cs.Brand + " " + cs.Model,
+                       UserId = bs.UserId,
+                       User = us.UserName,
+                       Start = bs.Start,
+                       End = bs.End
+                   };
         }
 
-        public Booking GetByID(int id)
+
+
+        public BookingViewModel GetBookingView(int id)
         {
-            return applicationDbContext.Bookings.FirstOrDefault(b => b.Id == id);
+            return (from bs in applicationDbContext.Bookings
+                   join cs in applicationDbContext.Cars on bs.CarId equals cs.Id
+                   join us in applicationDbContext.Users on bs.UserId equals us.Id
+                   where bs.Id == id
+                   select new BookingViewModel
+                   {
+                       Id = bs.Id,
+                       CarId = bs.CarId,
+                       Car = cs.Brand + " " + cs.Model,
+                       UserId = bs.UserId,
+                       User = us.UserName,
+                       Start = bs.Start,
+                       End = bs.End
+                   }).FirstOrDefault();
         }
 
         public bool DoesUserExist(string userId)
@@ -80,7 +99,10 @@ namespace FribergCarRentals.Data
                 .Any(b => b.Start < endDate && b.End > startDate);
         }
 
-
+        public Booking GetByID(int id)
+        {
+            return applicationDbContext.Bookings.FirstOrDefault(b => b.Id == id);   
+        }
 
         //public Booking MakeBooking(int userId, int carId, DateTime startDate, DateTime endDate)
         //{

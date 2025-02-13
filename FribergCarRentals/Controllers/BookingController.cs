@@ -2,52 +2,57 @@
 using FribergCarRentals.Models;
 using FribergCarRentals.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Linq;
 
 namespace FribergCarRentals.Controllers
 {
-    [Authorize] 
+    [Authorize]
     public class BookingController : Controller
     {
-        private readonly IBookingService bookingService; 
-        
-        public BookingController(IBookingService bookingService)
+        private readonly IBookingService _bookingService;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly ICarRepository _carRepository;
+
+        public BookingController(IBookingService bookingService, UserManager<IdentityUser> userManager, ICarRepository carRepository)
         {
-            this.bookingService = bookingService;
+            _bookingService = bookingService;
+            _userManager = userManager;
+            _carRepository = carRepository;
         }
 
         // GET: BookingController
         public ActionResult Index()
         {
-            return View(bookingService.GetBookingView());
+            return View(_bookingService.GetBookingsView());
         }
 
         // GET: BookingController/Details/5
         public ActionResult Details(int id)
         {
-            return View(bookingService.GetByID(id));
+            return View(_bookingService.GetBookingView(id));
         }
 
         // GET: BookingController/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            var users = bookingService.GetUsers()
+            var users = _bookingService.GetUsers()
                 .Select(u => new SelectListItem
                 {
                     Value = u.Id.ToString(),
-                    Text = u.UserName 
+                    Text = u.UserName
                 }).ToList();
 
             ViewBag.UserId = users;
 
-            var cars = bookingService.GetCars()
+            var cars = _bookingService.GetCars()
                 .Select(c => new SelectListItem
                 {
                     Value = c.Id.ToString(),
-                    Text = c.Brand + " " + c.Model 
+                    Text = c.Brand + " " + c.Model
                 }).ToList();
 
             ViewBag.CarId = cars;
@@ -58,72 +63,151 @@ namespace FribergCarRentals.Controllers
         // POST: BookingController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public ActionResult Create(Booking booking)
         {
-            var user = new IdentityUser { Id = booking.UserId };
-            var car = new Car { Id = booking.CarId };
-
-            bookingService.ValidateAndCreate(user, car, booking.Start, booking.End);
+            //var user = new IdentityUser { Id = booking.UserId };
+            //var car = new Car { Id = booking.CarId };
 
             try
             {
                 if (ModelState.IsValid)
                 {
-                    // Additional logic if needed
+                    _bookingService.ValidateAndCreate(booking.UserId, booking.CarId, booking.Start, booking.End);
+
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
+                return View(booking);
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                ModelState.AddModelError(string.Empty, ex.Message);
+
+                var users = _bookingService.GetUsers()
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.Id.ToString(),
+                        Text = u.UserName
+                    }).ToList();
+
+                ViewBag.UserId = users;
+
+                var cars = _bookingService.GetCars()
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Brand + " " + c.Model
+                    }).ToList();
+
+                ViewBag.CarId = cars;
+
+                return View(booking);
             }
         }
 
         // GET: BookingController/Edit/5
-        public ActionResult Edit(int id)
+        [Authorize(Roles = "Admin")]
+        public IActionResult Edit(int id)
         {
-            return View(bookingService.GetByID(id));
+            var booking = _bookingService.GetByID(id);
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            var users = _bookingService.GetUsers()
+                .Select(u => new SelectListItem
+                {
+                    Value = u.Id.ToString(),
+                    Text = u.UserName
+                }).ToList();
+
+            ViewBag.UserId = users;
+
+            var cars = _bookingService.GetCars()
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Brand + " " + c.Model
+                }).ToList();
+
+            ViewBag.CarId = cars;
+
+            return View(booking);
         }
 
         // POST: BookingController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(Booking booking)
+        [Authorize(Roles = "Admin")]
+        public IActionResult Edit(int id, Booking booking)
         {
+            if (id != booking.Id)
+            {
+                return BadRequest();
+            }
+
             try
             {
                 if (ModelState.IsValid)
                 {
-                    //bookingRepository.Update(booking);
+                    _bookingService.Update(booking);
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
+                return View(booking);
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                ModelState.AddModelError(string.Empty, ex.Message);
+
+                var users = _bookingService.GetUsers()
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.Id.ToString(),
+                        Text = u.UserName
+                    }).ToList();
+
+                ViewBag.UserId = users;
+
+                var cars = _bookingService.GetCars()
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Brand + " " + c.Model
+                    }).ToList();
+
+                ViewBag.CarId = cars;
+                return View(booking);
             }
         }
 
         // GET: BookingController/Delete/5
-        public ActionResult Delete(int id)
+        [Authorize(Roles = "Admin")]
+        public IActionResult Delete(int id)
         {
-            return View(bookingService.GetByID(id));
+            var booking = _bookingService.GetBookingView(id);
+            if (booking == null)
+            {
+                return NotFound();
+            }
+            return View(booking);
         }
 
         // POST: BookingController/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("DeleteConfirmed")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(Booking booking)
+        [Authorize(Roles = "Admin")]
+        public IActionResult DeleteConfirmed(int id)
         {
-            try
+            var booking = _bookingService.GetByID(id);
+            if (booking == null)
             {
-                bookingService.DeleteBooking(booking);
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
-            catch
-            {
-                return View();
-            }
+
+            _bookingService.DeleteBooking(booking);
+            
+            return RedirectToAction(nameof(Index));
         }
     }
 }

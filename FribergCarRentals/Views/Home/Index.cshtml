@@ -1,8 +1,30 @@
-﻿@{
+﻿@model IEnumerable<FribergCarRentals.Models.Car>
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+    <div class="row">
+        @foreach (var car in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    @if (car.Image != null && car.Image.Length > 0)
+                    {
+                        <img src="data:@car.ImageFormat;base64,@Convert.ToBase64String(car.Image)" class="card-img-top" alt="Car Image" style="max-width: 100%; height: auto;" />
+                    }
+                    else
+                    {
+                        <img src="~/images/no-image-available.png" class="card-img-top" alt="No Image Available" style="max-width: 100%; height: auto;" />
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@car.Brand @car.Model</h5>
+                        <p class="card-text">Model Year: @car.ModelYear</p>
+                        <a href="@Url.Action("Details", "Car", new { id = car.Id })" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 </div>
