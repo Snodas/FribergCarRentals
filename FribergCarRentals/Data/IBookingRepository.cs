@@ -11,6 +11,7 @@ namespace FribergCarRentals.Data
         BookingViewModel GetBookingView(int id);
         IEnumerable<Car> GetAllCars();
         IEnumerable<IdentityUser> GetAllUsers();
+        IEnumerable<BookingViewModel> GetBookingsByUserId(string userId); // Add this method
 
         void Add(Booking booking);
         void Update(Booking booking);

@@ -24,10 +24,56 @@ namespace FribergCarRentals.Controllers
         }
 
         // GET: BookingController
+        [Authorize(Roles = "Admin")]
         public ActionResult Index()
         {
-            return View(_bookingService.GetBookingsView());
+            var bookings = _bookingService.GetBookingsView();
+
+            var sortedBookings = bookings
+                .OrderBy(b => b.Start > DateTime.Now)
+                .ThenBy(b => b.Start <= DateTime.Now && b.End >= DateTime.Now) 
+                .ThenBy(b => b.End < DateTime.Now) 
+                .ToList();
+
+            return View(sortedBookings);
         }
+
+
+        // GET: BookingController/MyBookings
+        [Authorize]
+        public IActionResult MyBookings()
+        {
+            var userId = _userManager.GetUserId(User);
+            var bookings = _bookingService.GetBookingsByUserId(userId);
+
+            var sortedBookings = bookings
+                .OrderBy(b => b.Start > DateTime.Now)
+                .ThenBy(b => b.Start <= DateTime.Now && b.End >= DateTime.Now)
+                .ThenBy(b => b.End < DateTime.Now) 
+                .ToList();
+
+            return View(sortedBookings);
+        }
+
+        // POST: BookingController/Cancel/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public IActionResult Cancel(int id)
+        {
+            var booking = _bookingService.GetByID(id);
+            if (booking == null || booking.UserId != _userManager.GetUserId(User))
+            {
+                return NotFound();
+            }
+
+            _bookingService.DeleteBooking(booking);
+            TempData["SuccessMessage"] = "Booking canceled successfully.";
+            return RedirectToAction(nameof(MyBookings));
+        }
+
+
+
 
         // GET: BookingController/Details/5
         public ActionResult Details(int id)
@@ -36,14 +82,15 @@ namespace FribergCarRentals.Controllers
         }
 
         // GET: BookingController/Create
-        [Authorize(Roles = "Admin")]
-        public IActionResult Create()
+        [Authorize]
+        public IActionResult Create(int carId)
         {
             var users = _bookingService.GetUsers()
                 .Select(u => new SelectListItem
                 {
                     Value = u.Id.ToString(),
-                    Text = u.UserName
+                    Text = u.UserName,
+                    Selected = u.Id == _userManager.GetUserId(User) 
                 }).ToList();
 
             ViewBag.UserId = users;
@@ -52,7 +99,8 @@ namespace FribergCarRentals.Controllers
                 .Select(c => new SelectListItem
                 {
                     Value = c.Id.ToString(),
-                    Text = c.Brand + " " + c.Model
+                    Text = c.Brand + " " + c.Model,
+                    Selected = c.Id == carId   
                 }).ToList();
 
             ViewBag.CarId = cars;
@@ -63,45 +111,39 @@ namespace FribergCarRentals.Controllers
         // POST: BookingController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         public ActionResult Create(Booking booking)
         {
-            //var user = new IdentityUser { Id = booking.UserId };
-            //var car = new Car { Id = booking.CarId };
-
             try
             {
                 if (ModelState.IsValid)
                 {
                     _bookingService.ValidateAndCreate(booking.UserId, booking.CarId, booking.Start, booking.End);
-
-                    return RedirectToAction(nameof(Index));
+                    TempData["SuccessMessage"] = "Booking Successfull!";                  
+                    
+                    if (User.IsInRole("Admin"))
+                    {
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        return RedirectToAction(nameof(MyBookings));
+                    }
                 }
                 return View(booking);
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                TempData["ErrorMessage"] = "Booking failed, please try again. " + ex.Message;
 
-                var users = _bookingService.GetUsers()
-                    .Select(u => new SelectListItem
-                    {
-                        Value = u.Id.ToString(),
-                        Text = u.UserName
-                    }).ToList();
-
-                ViewBag.UserId = users;
-
-                var cars = _bookingService.GetCars()
-                    .Select(c => new SelectListItem
-                    {
-                        Value = c.Id.ToString(),
-                        Text = c.Brand + " " + c.Model
-                    }).ToList();
-
-                ViewBag.CarId = cars;
-
-                return View(booking);
+                if (User.IsInRole("Admin"))
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    return RedirectToAction(nameof(MyBookings));
+                }
             }
         }
 

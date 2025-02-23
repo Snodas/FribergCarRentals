@@ -104,56 +104,22 @@ namespace FribergCarRentals.Data
             return applicationDbContext.Bookings.FirstOrDefault(b => b.Id == id);   
         }
 
-        //public Booking MakeBooking(int userId, int carId, DateTime startDate, DateTime endDate)
-        //{
-        //    // Validate user existence
-        //    var user = applicationDbContext.Users.FirstOrDefault(u => u.Id == userId);
-        //    if (user == null)
-        //    {
-        //        throw new Exception("User does not exist.");
-        //    }
-
-        //    // Validate car existence
-        //    var car = applicationDbContext.Cars.FirstOrDefault(c => c.Id == carId);
-        //    if (car == null)
-        //    {
-        //        throw new Exception("Car does not exist.");
-        //    }
-
-        //    // Validate start and end dates
-        //    if (startDate < DateTime.Now)
-        //    {
-        //        throw new Exception("Start date cannot be in the past.");
-        //    }
-
-        //    if (endDate <= startDate)
-        //    {
-        //        throw new Exception("End date must be after the start date.");
-        //    }
-
-        //    // Check car availability
-        //    bool isCarAvailable = !applicationDbContext.Bookings
-        //        .Where(b => b.Car.Id == car.Id)
-        //        .Any(b => b.Start < endDate && b.End > startDate);
-
-        //    if (!isCarAvailable)
-        //    {
-        //        throw new Exception("Car is not available for the selected dates.");
-        //    }
-
-        //    // Create and save the booking
-        //    var booking = new Booking
-        //    {
-        //        User = user,
-        //        Car = car,
-        //        Start = startDate,
-        //        End = endDate
-        //    };
-
-        //    applicationDbContext.Bookings.Add(booking);
-        //    applicationDbContext.SaveChanges();
-
-        //    return booking;
-        //}
+        public IEnumerable<BookingViewModel> GetBookingsByUserId(string userId)
+        {
+            return from bs in applicationDbContext.Bookings
+                   join cs in applicationDbContext.Cars on bs.CarId equals cs.Id
+                   join us in applicationDbContext.Users on bs.UserId equals us.Id
+                   where bs.UserId == userId
+                   select new BookingViewModel
+                   {
+                       Id = bs.Id,
+                       CarId = bs.CarId,
+                       Car = cs.Brand + " " + cs.Model,
+                       UserId = bs.UserId,
+                       User = us.UserName,
+                       Start = bs.Start,
+                       End = bs.End
+                   };
+        }
     }
 }

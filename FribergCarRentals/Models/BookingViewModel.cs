@@ -19,4 +19,10 @@ namespace FribergCarRentals.Models
         [DataType(DataType.Date)]
         public DateTime End { get; set; }
     }
+
+    public class MyBookingViewModel
+    {
+        public List<BookingViewModel> OldBookings { get; set; }
+        public List<BookingViewModel> CurrentBookings { get; set; }
+    }   
 }

@@ -13,44 +13,44 @@
     <link rel="stylesheet" href="~/FribergCarRentals.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">FribergCarRentals</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+    <header>        
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Friberg Car Rentals</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                        aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                          
                     </ul>
-                    <ul class="navbar-nav ms-auto">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         @if (SignInManager.IsSignedIn(User))
                         {
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
                                     @UserManager.GetUserName(User)
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" asp-area="" asp-controller="Car" asp-action="Index">Cars</a></li>
-                                    <li><a class="dropdown-item" asp-area="" asp-controller="Booking" asp-action="Index">Bookings</a></li>
-                                    <li><a class="dropdown-item" asp-area="" asp-controller="User" asp-action="Index">Users</a></li>
                                     @if (User.IsInRole("Admin"))
                                     {
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Admin" asp-action="Index">Admin Panel</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Car" asp-action="Index">Cars</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Booking" asp-action="Index">Bookings</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="User" asp-action="Index">Users</a></li>
+                                        <li><hr class="dropdown-divider"></li>
                                     }
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Manage Account</a></li>
-                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">Change Password</a></li>
+                                    else
+                                    {
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="Booking" asp-action="MyBookings">My Bookings</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Settings</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                                        <form asp-area="Identity" asp-page="/Account/Logout"
+                                              asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
                                             <button type="submit" class="dropdown-item">Logout</button>
                                         </form>
                                     </li>
@@ -60,10 +60,10 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a>
                             </li>
                         }
                     </ul>
@@ -71,17 +71,19 @@
             </div>
         </nav>
     </header>
-    <div class="container">
+
+    <div class="container mt-4">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - FribergCarRentals - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="bg-light py-3 mt-4">
+        <div class="container text-center">
+            <small>&copy; 2025 - FribergCarRentals - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></small>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

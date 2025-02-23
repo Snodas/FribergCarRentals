@@ -22,6 +22,7 @@
                         <h5 class="card-title">@car.Brand @car.Model</h5>
                         <p class="card-text">Model Year: @car.ModelYear</p>
                         <a href="@Url.Action("Details", "Car", new { id = car.Id })" class="btn btn-primary">View Details</a>
+                        <a href="@Url.Action("Create", "Booking", new { carId = car.Id })" class="btn btn-success">Book Now</a>
                     </div>
                 </div>
             </div>

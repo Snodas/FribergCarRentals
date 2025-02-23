@@ -4,20 +4,10 @@ using Microsoft.AspNetCore.Identity;
 using FribergCarRentals.Services;
 using FribergCarRentals.Models;
 
-//namespace FribergCarRentals
-//{
-//    public class Program
-//    {
-//        public async static void Main(string[] args)
-//        {
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("IdentityDbContextConnection") ?? throw new InvalidOperationException("Connection string 'IdentityDbContextConnection' not found.");;
-
-// Add services to the container.
             
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=CarRentalDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False"));
-
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -31,11 +21,10 @@ builder.Services.AddTransient<IBookingService, BookingService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -49,7 +38,7 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
-app.UseStaticFiles();
+
 
 app.MapControllerRoute(
     name: "default",
@@ -86,6 +75,4 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
-//        }
-//    }
-//}
+

@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Edit Booking";
+    var isAdmin = User.IsInRole("Admin");
 }
 
 <h1>Edit Booking</h1>
@@ -34,5 +35,5 @@
     </div>
 </div>
 <div>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    <a asp-action="@((isAdmin) ? "Index" : "MyBookings")" class="btn btn-secondary">Back to List</a>
 </div>

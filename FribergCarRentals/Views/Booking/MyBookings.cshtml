@@ -1,10 +1,10 @@
 ﻿@model IEnumerable<FribergCarRentals.Models.BookingViewModel>
 
 @{
-    ViewData["Title"] = "Bookings";
+    ViewData["Title"] = "My Bookings";
 }
 
-<h1>Bookings</h1>
+<h1>My Bookings</h1>
 
 @if (TempData["SuccessMessage"] != null)
 {
@@ -22,33 +22,28 @@
     </div>
 }
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create New Booking</a>
-</p>
-
 <h3>Upcoming Bookings</h3>
 <table class="table">
     <thead>
         <tr>
             <th>Car</th>
-            <th>User</th>
             <th>Start Date</th>
             <th>End Date</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Where(b => b.Start > DateTime.Now))
+        @foreach (var booking in Model.Where(b => b.Start > DateTime.Now))
         {
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.Car)</td>
-                <td>@Html.DisplayFor(modelItem => item.User)</td>
-                <td>@item.Start.ToString("g")</td>
-                <td>@item.End.ToString("g")</td>
+                <td>@booking.Car</td>
+                <td>@booking.Start.ToString("g")</td>
+                <td>@booking.End.ToString("g")</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    <form asp-action="Cancel" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@booking.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                    </form>
                 </td>
             </tr>
         }
@@ -60,24 +55,19 @@
     <thead>
         <tr>
             <th>Car</th>
-            <th>User</th>
             <th>Start Date</th>
             <th>End Date</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Where(b => b.Start <= DateTime.Now && b.End >= DateTime.Now))
+        @foreach (var booking in Model.Where(b => b.Start <= DateTime.Now && b.End >= DateTime.Now))
         {
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.Car)</td>
-                <td>@Html.DisplayFor(modelItem => item.User)</td>
-                <td>@item.Start.ToString("g")</td>
-                <td>@item.End.ToString("g")</td>
+                <td>@booking.Car</td>
+                <td>@booking.Start.ToString("g")</td>
+                <td>@booking.End.ToString("g")</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                 </td>
             </tr>
         }
@@ -89,24 +79,19 @@
     <thead>
         <tr>
             <th>Car</th>
-            <th>User</th>
             <th>Start Date</th>
             <th>End Date</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Where(b => b.End < DateTime.Now))
+        @foreach (var booking in Model.Where(b => b.End < DateTime.Now))
         {
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.Car)</td>
-                <td>@Html.DisplayFor(modelItem => item.User)</td>
-                <td>@item.Start.ToString("g")</td>
-                <td>@item.End.ToString("g")</td>
+                <td>@booking.Car</td>
+                <td>@booking.Start.ToString("g")</td>
+                <td>@booking.End.ToString("g")</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                 </td>
             </tr>
         }

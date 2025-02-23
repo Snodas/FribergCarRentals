@@ -93,5 +93,10 @@ namespace FribergCarRentals.Services
         {
             _bookingRepository.Update(booking);
         }
+
+        public IEnumerable<BookingViewModel> GetBookingsByUserId(string userId)
+        {
+            return _bookingRepository.GetBookingsByUserId(userId);
+        }
     }
 }
